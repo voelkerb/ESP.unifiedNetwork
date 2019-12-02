@@ -13,6 +13,7 @@
 
 // Wifi stuff
 #include <esp_wifi.h>
+// Wifi and TCP/UDP Server stuff
 #include <WiFi.h>
 #include <WiFiAP.h>
 // Ethernet stuff
@@ -38,10 +39,11 @@ namespace Network {
     extern MultiLogger& logger;
     extern bool connected;
     extern bool apMode;
-    extern bool _ethernet;
+    extern bool ethernet;
 
     void init(Configuration * config);
-    void init(Configuration * config, void (*onConnect)(void), void (*onDisconnect)(void), bool ethernet=false);
+    void init(Configuration * config, void (*onConnect)(void), void (*onDisconnect)(void), bool usingEthernet=false);
+    void initPHY(uint8_t addr, uint8_t pwr, uint8_t mdc, uint8_t mdio, eth_phy_type_t type, eth_clock_mode_t clk_mode);
     bool update();
     bool connect(char * network, char * pswd);
     void setupAP();

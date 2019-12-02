@@ -14,7 +14,7 @@ namespace Network
 {
   bool connected = false;
   bool apMode = false;
-  bool _ethernet = false;
+  bool ethernet = false;
   MultiLogger& logger = MultiLogger::getInstance();
 
   static Configuration * _config;
@@ -106,7 +106,7 @@ namespace Network
     }
     #endif
 
-    if (_ethernet) {
+    if (ethernet) {
       switch (event) {
         case SYSTEM_EVENT_ETH_START:
           logger.log("ETH Started");
@@ -117,7 +117,7 @@ namespace Network
           logger.log("ETH Connected");
           break;
         case SYSTEM_EVENT_ETH_GOT_IP:
-          logger.log("ETH MAC: %s, IP: %s, Speed: %iMbps", ETH.macAddress(), ETH.localIP().toString().c_str(), ETH.linkSpeed());
+          logger.log("ETH MAC: %s, IP: %s, Speed: %iMbps", ETH.macAddress().c_str(), ETH.localIP().toString().c_str(), ETH.linkSpeed());
           connected = true;
           if (_onConnect) _onConnect();
           break;
@@ -179,19 +179,20 @@ namespace Network
     init(config, NULL, NULL);
   }
 
-  void init(Configuration * config, void (*onConnect)(void), void (*onDisconnect)(void), bool ethernet) {
+
+  void init(Configuration * config, void (*onConnect)(void), void (*onDisconnect)(void), bool usingEthernet) {
     _config = config;
     _onConnect = onConnect;
     _onDisconnect = onDisconnect;
-    _ethernet = ethernet;
+    ethernet = usingEthernet;
     connected = false;
     // We do not need bluetooth, so disable it
     esp_bt_controller_disable();
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     WiFi.onEvent(&wifiEvent);
-    if (_ethernet) {
+    if (ethernet) {
       apMode = false;
-      ETH.begin();
+      // ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_MDC_PIN, ETH_MDIO_PIN, ETH_TYPE, ETH_CLK_MODE);
     } else {
       WiFi.setHostname(_config->name);
       WiFi.mode(WIFI_AP_STA);
@@ -202,8 +203,12 @@ namespace Network
     }
   }
 
+  void initPHY(uint8_t addr, uint8_t pwr, uint8_t mdc, uint8_t mdio, eth_phy_type_t type, eth_clock_mode_t clk_mode) {
+      ETH.begin(addr, pwr, mdc, mdio, type, clk_mode);
+  }
+
   IPAddress localIP() {
-    if (_ethernet) return ETH.localIP();
+    if (ethernet) return ETH.localIP();
     else return WiFi.localIP(); 
   }
 
