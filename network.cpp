@@ -243,11 +243,11 @@ namespace Network
     // blocking call
     // NOTE: non blocking call did not work properly
     WiFi.mode(WIFI_AP_STA);
-    int n = WiFi.scanNetworks();
+    size_t n = WiFi.scanNetworks();
     int found = -1;
     logger.log("Scan done %u networks found", n);
     if (n != 0) {
-      for (int i = 0; i < n; ++i) {
+      for (size_t i = 0; i < n; ++i) {
         logger.log("%s (%i)", WiFi.SSID(i).c_str(), WiFi.RSSI(i));
         // Print SSID and RSSI for each network found
         // logger.append("%s (%i)", WiFi.SSID(i), WiFi.RSSI(i));
@@ -260,8 +260,8 @@ namespace Network
     // Only if we have found any network, we can search for a known one
     if (n != 0) {
       int linkQuality = -1000; // The smaller the worse the quality (in dBm)
-      for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < _config->numAPs; j++) {
+      for (size_t i = 0; i < n; ++i) {
+        for (size_t j = 0; j < _config->numAPs; j++) {
           if (strcmp(WiFi.SSID(i).c_str(), _config->wifiSSIDs[j]) == 0) {
             if (WiFi.RSSI(i) > linkQuality) {
               linkQuality = WiFi.RSSI(i);
