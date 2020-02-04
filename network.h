@@ -11,18 +11,10 @@
 #ifndef NETWORK_h
 #define NETWORK_h
 
-// Wifi stuff
-#include <esp_wifi.h>
-// Wifi and TCP/UDP Server stuff
-#include <WiFi.h>
-#include <WiFiAP.h>
-// Ethernet stuff
-#include <ETH.h>
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
 // To trigger things regularly
 #include <Ticker.h> 
-// Both to set bt to sleep
-#include <esp_sleep.h>
-#include <esp_bt.h>
 // Logging and configuration stuff
 #include "../logger/logger.h"
 #include "../config/config.h"
@@ -42,13 +34,18 @@ namespace Network {
     extern bool ethernet;
 
     void init(Configuration * config);
-    void init(Configuration * config, void (*onConnect)(void), void (*onDisconnect)(void), bool usingEthernet=false);
-    void initPHY(uint8_t addr, uint8_t pwr, uint8_t mdc, uint8_t mdio, eth_phy_type_t type, eth_clock_mode_t clk_mode);
+    void init(Configuration * config, void (*onConnect)(void), void (*onDisconnect)(void));
     bool update();
     bool connect(char * network, char * pswd);
     void setupAP();
     IPAddress localIP();
-    void wifiEvent(WiFiEvent_t event);
+    
+    // void onSoftAPModeStationConnected(const WiFiEventSoftAPModeStationConnected& evt);
+    // void onSoftAPModeStationDisconnected(const WiFiEventSoftAPModeStationDisconnected& evt);
+    // void onStationModeGotIP(const WiFiEventStationModeGotIP& evt);
+    // void onStationConnected(const WiFiEventSoftAPModeStationConnected& evt);
+    // void onStationDisconnected(const WiFiEventSoftAPModeStationDisconnected& evt);
+
     void checkNetwork();
     void scanNetwork( void * pvParameters );
 
