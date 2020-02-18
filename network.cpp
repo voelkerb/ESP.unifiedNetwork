@@ -143,12 +143,13 @@ namespace Network
           logger.log("STA_CONNECTED");
           break;
         case SYSTEM_EVENT_STA_DISCONNECTED:
+          // Recheck for wifi networks
+          if (connected and apMode == false) checkNetwork();
           connected = false;
           apMode = false;
           // lets check for networks regularly
           logger.log("STA_DISCONNECTED");
           if (_onDisconnect) _onDisconnect();
-          checkNetwork();
           break;
         case SYSTEM_EVENT_STA_GOT_IP:
           connected = true;
