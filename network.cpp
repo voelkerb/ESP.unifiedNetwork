@@ -14,13 +14,13 @@ namespace Network
 {
   bool connected = false;
   bool apMode = false;
+  bool allowNetworkChange = false;
   bool ethernet = false;
   MultiLogger& logger = MultiLogger::getInstance();
 
   static Configuration * _config;
   static void (*_onConnect)(void);
   static void (*_onDisconnect)(void);
-  static Ticker checker;
 
   void wifiEvent(WiFiEvent_t event) {
     #ifdef DEBUG_DEEP
@@ -146,15 +146,13 @@ namespace Network
           connected = false;
           apMode = false;
           // lets check for networks regularly
-          checker.attach(CHECK_PERIODE, checkNetwork);
           logger.log("STA_DISCONNECTED");
           if (_onDisconnect) _onDisconnect();
-          setupAP();
+          checkNetwork();
           break;
         case SYSTEM_EVENT_STA_GOT_IP:
           connected = true;
           apMode = false;
-          checker.detach();
           logger.log("STA_GOT_IP");
           if (_onConnect) _onConnect();
           break;
@@ -188,18 +186,20 @@ namespace Network
     connected = false;
     // We do not need bluetooth, so disable it
     esp_bt_controller_disable();
+    // Forget any previously set configuration
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+    // Disconnect if we were connected
+    WiFi.disconnect();
+    WiFi.mode(WIFI_STA);
     WiFi.onEvent(&wifiEvent);
     if (ethernet) {
       apMode = false;
       // ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_MDC_PIN, ETH_MDIO_PIN, ETH_TYPE, ETH_CLK_MODE);
     } else {
       WiFi.setHostname(_config->name);
-      WiFi.mode(WIFI_AP_STA);
       // Disable wifi power saving
       esp_wifi_set_ps(WIFI_PS_NONE);
       checkNetwork();
-      checker.attach(CHECK_PERIODE, checkNetwork);
     }
   }
 
@@ -235,55 +235,72 @@ namespace Network
     apMode = true;
     logger.log("Setting up AP: %s", _config->name);
     WiFi.softAP(_config->name);
-    // Check for known networks regularly
-    // checker.detach();
   }
 
   void scanNetwork( void * pvParameters ) {
-    // blocking call
-    // NOTE: non blocking call did not work properly
-    WiFi.mode(WIFI_AP_STA);
-    size_t n = WiFi.scanNetworks();
-    int found = -1;
-    logger.log("Scan done %u networks found", n);
-    if (n != 0) {
-      for (size_t i = 0; i < n; ++i) {
-        logger.log("%s (%i)", WiFi.SSID(i).c_str(), WiFi.RSSI(i));
-        // Print SSID and RSSI for each network found
-        // logger.append("%s (%i)", WiFi.SSID(i), WiFi.RSSI(i));
-        // if (i < n-1) logger.append(", ");
-      }
-      // logger.flush();
-    }
+    // Indicating if we are connected to a wifi station
+    bool staConnected = false;
+    bool apInited = false;
 
-    found = -1;
-    // Only if we have found any network, we can search for a known one
-    if (n != 0) {
-      int linkQuality = -1000; // The smaller the worse the quality (in dBm)
-      for (size_t i = 0; i < n; ++i) {
-        for (size_t j = 0; j < _config->numAPs; j++) {
-          if (strcmp(WiFi.SSID(i).c_str(), _config->wifiSSIDs[j]) == 0) {
-            if (WiFi.RSSI(i) > linkQuality) {
-              linkQuality = WiFi.RSSI(i);
-              found = j;
+    while (not staConnected) {
+      if (allowNetworkChange) {
+        vTaskDelay(CHECK_PERIODE_MS); 
+        continue;
+      }
+      logger.log(INFO, "Scanning for Wifi Networks");
+      int n = WiFi.scanNetworks();
+      if (n == -2) {
+        logger.log(ERROR, "Scan failed");
+      } else if (n == -1) {
+        logger.log(WARNING, "Scan already in progress");
+      } else if (n == 0) {
+        logger.log(INFO, "No network found");
+      } else {
+        logger.log("Scan done %i networks found", n);
+        for (size_t i = 0; i < (size_t)n; ++i) {
+          logger.log("%s (%i)", WiFi.SSID(i).c_str(), WiFi.RSSI(i));
+        }
+      }
+
+      int found = -1;
+      // Only if we have found any network, we can search for a known one
+      if (n > 0) {
+        int linkQuality = -1000; // The smaller the worse the quality (in dBm)
+        for (size_t i = 0; i < (size_t)n; ++i) {
+          for (size_t j = 0; j < _config->numAPs; j++) {
+            if (strcmp(WiFi.SSID(i).c_str(), _config->wifiSSIDs[j]) == 0) {
+              if (WiFi.RSSI(i) > linkQuality) {
+                linkQuality = WiFi.RSSI(i);
+                found = j;
+              }
+              break; // Only break inner for loop, to check rest for better rssi
             }
-            break; // Only break inner for loop, to check rest for better rssi
           }
         }
       }
-    }
 
-    if (found != -1) {
-      logger.log("Strongest known network: %s", _config->wifiSSIDs[found]);
-      // connect
-      WiFi.mode(WIFI_STA);
-      WiFi.begin(_config->wifiSSIDs[found], _config->wifiPWDs[found]);
-    } else {
-      logger.log(WARNING, "No known network");
-      // We setup an access point
-      setupAP();
-    }
+      if (found != -1) {
+        logger.log("Strongest known network: %s", _config->wifiSSIDs[found]);
+        if (connect(_config->wifiSSIDs[found], _config->wifiPWDs[found])) {
+          staConnected = true;
+        } else {
+          apInited = false;
+        }
+      } else {
+        logger.log(WARNING, "No known network");
+      }
 
+      if (not staConnected and not apInited) {
+        // We setup an access point
+        setupAP();
+        apInited = true;
+      }
+      // Delete results of previous scan
+      WiFi.scanDelete();
+      // If we are connected break, otherwise wait and continue with next scan
+      if (staConnected) break;
+      vTaskDelay(CHECK_PERIODE_MS);
+    }
     vTaskDelete( NULL );
   }
 
@@ -294,9 +311,9 @@ namespace Network
                       "scanTask", /* Name of the task */
                       10000,      /* Stack size in words */
                       NULL,       /* Task input parameter */
-                      2,          /* Priority of the task */
+                      1,          /* Priority of the task */
                       NULL,       /* Task handle. */
-                      0);  /* Core where the task should run */
+                      1);  /* Core where the task should run */
 
   }
 }
