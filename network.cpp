@@ -13,8 +13,10 @@
 namespace Network
 {
   bool connected = false;
+  bool preConnected = false;
   bool apMode = false;
-  bool allowNetworkChange = false;
+  bool staConnected = false;
+  bool allowNetworkChange = true;
   bool ethernet = false;
   MultiLogger& logger = MultiLogger::getInstance();
 
@@ -139,31 +141,38 @@ namespace Network
           break;
         case SYSTEM_EVENT_STA_CONNECTED:
           apMode = false;
-          connected = true;
+          connected = false;
+          preConnected = true;
           logger.log("STA_CONNECTED");
           break;
         case SYSTEM_EVENT_STA_DISCONNECTED:
           // Recheck for wifi networks
           if (connected and apMode == false) checkNetwork();
           connected = false;
+          preConnected = false;
           apMode = false;
           // lets check for networks regularly
           logger.log("STA_DISCONNECTED");
           if (_onDisconnect) _onDisconnect();
           break;
         case SYSTEM_EVENT_STA_GOT_IP:
+          WiFi.softAPdisconnect(false);
+          WiFi.mode(WIFI_STA);
           connected = true;
+          staConnected = true;
           apMode = false;
           logger.log("STA_GOT_IP");
           if (_onConnect) _onConnect();
           break;
         case SYSTEM_EVENT_AP_START:
+          if (apMode) break;
           connected = true;
           apMode = true;
           logger.log("AP_START");
           if (_onConnect) _onConnect();
           break;
         case SYSTEM_EVENT_AP_STOP:
+          if (not apMode) break;
           connected = false;
           apMode = false;
           logger.log("AP_STOP");
@@ -217,16 +226,25 @@ namespace Network
     logger.log("Connecting to: %s", network);
     WiFi.mode(WIFI_STA);
     WiFi.begin(network, pswd);
+    WiFi.begin(network, pswd);
     // Set the hostname
     WiFi.setHostname(_config->name);
     long start = millis();
     while (WiFi.status() != WL_CONNECTED) {
       yield();
       // After trying to connect for 8s continue without wifi
-      if (millis() - start > 8000) {
-        logger.log(ERROR, "Connection to %s failed!", network);
-        return false;
+      if (preConnected) {
+        if (millis() - start > 8000) {
+          logger.log(ERROR, "Cannot get IP from %s", network);
+          return false;
+        }
+      } else {
+        if (millis() - start > 5000) {
+          logger.log(ERROR, "Connection to %s failed!", network);
+          return false;
+        }
       }
+      delay(100);
     }
     return true;
   }
@@ -240,14 +258,21 @@ namespace Network
 
   void scanNetwork( void * pvParameters ) {
     // Indicating if we are connected to a wifi station
-    bool staConnected = false;
+    staConnected = false;
     bool apInited = false;
 
     while (not staConnected) {
-      if (allowNetworkChange) {
+      if (not allowNetworkChange) {
         vTaskDelay(CHECK_PERIODE_MS); 
         continue;
+      } 
+      // If already connected
+      // This is not true for AP mode
+      if (WiFi.status() == WL_CONNECTED) {
+        staConnected = true;
+        break;
       }
+
       logger.log(INFO, "Scanning for Wifi Networks");
       int n = WiFi.scanNetworks();
       if (n == -2) {
