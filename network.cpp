@@ -226,7 +226,6 @@ namespace Network
     logger.log("Connecting to: %s", network);
     WiFi.mode(WIFI_STA);
     WiFi.begin(network, pswd);
-    WiFi.begin(network, pswd);
     // Set the hostname
     WiFi.setHostname(_config->name);
     long start = millis();
@@ -251,7 +250,6 @@ namespace Network
 
   void setupAP() {
     WiFi.mode(WIFI_AP_STA);
-    apMode = true;
     logger.log("Setting up AP: %s", _config->name);
     WiFi.softAP(_config->name);
   }
@@ -262,7 +260,7 @@ namespace Network
     bool apInited = false;
 
     while (not staConnected) {
-      if (not allowNetworkChange) {
+      if (preConnected or not allowNetworkChange) {
         vTaskDelay(CHECK_PERIODE_MS); 
         continue;
       } 
@@ -276,10 +274,26 @@ namespace Network
       logger.log(INFO, "Scanning for Wifi Networks");
       int n = WiFi.scanNetworks();
       if (n == -2) {
+        staConnected = false;
+        apInited = false;
         logger.log(ERROR, "Scan failed");
+        //  Give it up ...
+        ESP.restart();
+        // Reconfigure wifi
+        // Delete results of previous scan
+        WiFi.scanDelete();
+        WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+        WiFi.disconnect();
+        WiFi.mode(WIFI_STA);
+        WiFi.onEvent(&wifiEvent);
+        esp_wifi_set_ps(WIFI_PS_NONE);
       } else if (n == -1) {
+        WiFi.scanDelete();
         logger.log(WARNING, "Scan already in progress");
+        //  Give it up ...
+        ESP.restart();
       } else if (n == 0) {
+        WiFi.scanDelete();
         logger.log(INFO, "No network found");
       } else {
         logger.log("Scan done %i networks found", n);
