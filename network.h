@@ -43,7 +43,7 @@ namespace Network {
     void init(Configuration * config);
     void init(Configuration * config, void (*onConnect)(void), void (*onDisconnect)(void), bool usingEthernet=false);
     void initPHY(uint8_t addr, uint8_t pwr, uint8_t mdc, uint8_t mdio, eth_phy_type_t type, eth_clock_mode_t clk_mode);
-    bool update();
+    char * getBSSID();
     bool connect(char * network, char * pswd);
     void setupAP();
     IPAddress localIP();

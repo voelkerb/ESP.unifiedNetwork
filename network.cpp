@@ -18,6 +18,8 @@ namespace Network
   bool staConnected = false;
   bool allowNetworkChange = true;
   bool ethernet = false;
+  #define MAX_MAC_LEN 19
+  char bssid[MAX_MAC_LEN] = {'\0'};
   MultiLogger& logger = MultiLogger::getInstance();
 
   static Configuration * _config;
@@ -213,6 +215,15 @@ namespace Network
       esp_wifi_set_ps(WIFI_PS_NONE);
       checkNetwork();
     }
+  }
+
+  char * getBSSID() {
+    if (connected and not apMode) {
+      snprintf(bssid, MAX_MAC_LEN, "%s", WiFi.BSSIDstr().c_str());
+    } else {
+      snprintf(bssid, MAX_MAC_LEN, "-");
+    }
+    return &bssid[0];
   }
 
   void initPHY(uint8_t addr, uint8_t pwr, uint8_t mdc, uint8_t mdio, eth_phy_type_t type, eth_clock_mode_t clk_mode) {
