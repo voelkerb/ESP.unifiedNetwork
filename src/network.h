@@ -1,11 +1,10 @@
 /***************************************************
  Library for network stuff, connection, AP and so on.
 
- Feel free to use the code as it is.
+ License: Creative Common V1. 
 
  Benjamin Völker, voelkerb@me.com
- Embedded Systems
- University of Freiburg, Institute of Informatik
+ Embedded Systems Engineer
  ****************************************************/
 
 #ifndef NETWORK_h
