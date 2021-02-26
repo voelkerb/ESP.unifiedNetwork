@@ -1,5 +1,5 @@
 /***************************************************
- Example file for using the time keeping library.
+ Example file for using the unifiedNetwork library.
  
  License: Creative Common V1. 
 
@@ -7,51 +7,53 @@
  Embedded Systems Engineer
  ****************************************************/
 
-#include "timeHandling.h"
-#if defined(ESP32)
-#include "WiFi.h"
-#elif defined(ESP8266)
-#include <ESP8266WiFi.h>
-#endif
+#include "network.h"
 
-// Wifi credentials
-char* SSID = "YourNetworkName";
-char* PWD =  "YourPassword";
+NetworkConf config;
 
-#define LOCATION_TIME_OFFSET 3600 // Germany is +1 Hour (DST is handled in library)
-char * timeServer = "time.google.com";
-
-TimeHandler myTime(timeServer, LOCATION_TIME_OFFSET, NULL, NULL);
-Timestamp then;
+// Allow to e.g. load the config from EEProm and such
+void initWifiConfig() {
+  // A maximum of MAX_WIFI_APS is allowed
+  snprintf(&config.SSIDs[0][0], MAX_NETWORK_LEN, "YourNetworkName");
+  snprintf(&config.PWDs[0][0], MAX_PWD_LEN, "YourPassword");
+  snprintf(&config.SSIDs[1][0], MAX_NETWORK_LEN, "YourNetworkName");
+  snprintf(&config.PWDs[1][0], MAX_PWD_LEN, "YourPassword");
+  snprintf(&config.name[0], MAX_DEVICE_NAME_LEN, "myESP");
+  config.numAPs = 2;
+}
 
 void setup() {
-  Serial.begin(9600);
-  // Connect to WiFi
-  WiFi.begin(SSID, PWD);
-  Serial.print("Connecting to WiFi.");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.print("\nConnected to the WiFi network: ");
-  Serial.print(SSID);
-  Serial.print(" with IP: ");
-  Serial.println(WiFi.localIP());
+  Serial.begin(115200);
+  
+  initWifiConfig();
+  
+  // Init network connection
+  Network::init(&config, onWifiConnect, onWifiDisconnect);
 
-  // Initial NTP update after connecting to WiFi
-  // Actively wait for finish
-  myTime.updateNTPTime();
-  then = myTime.timestamp();
-  Serial.print("Current time: ");
-  Serial.println(myTime.timeStr());
+  Serial.println("Setup done");
 }
 
 void loop() {
-  Timestamp now = myTime.timestamp();
-  if ((now.seconds-then.seconds) >= 10) {
-    Serial.println("Another 10s passed");
-    Serial.print("Current time: ");
-    Serial.println(myTime.timeStr());
-    then = now;
+  delay(1000);
+  Serial.println("ping!");
+}
+
+
+/****************************************************
+ * If ESP is connected to wifi successfully
+ ****************************************************/
+void onWifiConnect() {
+  if (not Network::apMode) {
+    Serial.printf("Wifi Connected: %s ", Network::getBSSID());
+    Serial.printf("IP: %s\n", Network::localIP().toString().c_str());
+  } else {
+    Serial.println("Network AP Opened");
   }
+}
+
+/****************************************************
+ * If ESP disconnected from wifi
+ ****************************************************/
+void onWifiDisconnect() {
+  Serial.println("Wifi Disconnected");
 }

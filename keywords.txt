@@ -7,9 +7,7 @@
 #######################################
 	
 Network	KEYWORD1
-Weekday		KEYWORD1	
-DST		    KEYWORD1
-Timestamp	KEYWORD1
+NetworkConf		KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -37,4 +35,9 @@ scanNetwork	        KEYWORD2
 # Constants (LITERAL1)
 #######################################
 
-MAX_MAC_LEN			    LITERAL1
+MAX_MAC_LEN			LITERAL1
+CHECK_PERIODE_MS    LITERAL1
+MAX_WIFI_APS        LITERAL1
+MAX_NETWORK_LEN     LITERAL1
+MAX_PWD_LEN         LITERAL1
+MAX_DEVICE_NAME_LEN LITERAL1

@@ -1,49 +1,50 @@
-# ESP.timeHandling
-NTP and RTC time sync for ESP8266 and ESP32 with Arduino Environment
+# ESP.unifiedNetwork
+Namespace to unify network (Wifi or Ethernet) code for ESP32 and ESP8266.
 
 Requirements:
-- [RTC](https://github.com/voelkerb/ESP.DS3231_RTC/)
-
-Supports:
 - [multiLogger](http://github.com/voelkerb/ESP.multiLogger) (-> see ```advanced.ino```)
 
 ```C++
-#include "timeHandling.h"
 
-// CB for successful ntp syncs
-void ntpSynced(unsigned int confidence);
+#include "network.h"
 
-TimeHandler myTime(config.timeServer, LOCATION_TIME_OFFSET, NULL, &ntpSynced);
+NetworkConf config;
 
-Timestamp then;
+// Allow to e.g. load the config from EEProm and such
+// TODO: Maybe add add/removeWifiAp function in the future
+void initWifiConfig() {
+  // A maximum of MAX_WIFI_APS is allowed
+  snprintf(&config.SSIDs[0][0], MAX_NETWORK_LEN, "YourNetworkName");
+  snprintf(&config.PWDs[0][0], MAX_PWD_LEN, "YourPassword");
+  config.numAPs = 1;
+}
 
 void setup() {
-  Serial.begin(9600);
-  // Connect to WiFi
-  ...
-  // Initial NTP update after connecting to WiFi
-  myTime.updateNTPTime();
-  then = myTime.timestamp();
+  Serial.begin(115200);
+  initWifiConfig();
+  // Start network connection, will open AP if no known network found
+  Network::init(&config, onWifiConnect, onWifiDisconnect);
+  Serial.println("Setup done");
 }
 
 void loop() {
-  Timestamp now = myTime.timestamp();
-  if ((now.seconds-then.seconds) >= 10) {
-    Serial.println("Another 10s passed");
-    Serial.print("Current time: ");
-    Serial.print(myTime.timeStr());
-    then = now;
-  }
   ...
 }
 
-/****************************************************
- * Callback when NTP syncs happened and
- * it's estimated confidence in ms
- ****************************************************/
-void ntpSynced(unsigned int confidence) {
-  Serial.print("NTP synced with conf: ");
-  Serial.println(confidence);
+// CB If ESP connected to wifi successfully
+void onWifiConnect() {
+  if (not Network::apMode) {
+    Serial.printf("Wifi Connected: %s ", Network::getBSSID());
+    Serial.printf("IP: %s\n", Network::localIP().toString().c_str());
+  } else {
+    Serial.println("Network AP Opened");
+  }
+}
+
+
+// CB If ESP disconnected from wifi
+void onWifiDisconnect() {
+  Serial.println("Wifi Disconnected");
 }
 
 ```
