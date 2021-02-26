@@ -1,0 +1,20 @@
+{
+	"name": "unifiedNetwork",
+	"version": "1.0.0",
+	"keywords": "Communication",
+	"description": "Namespace to unify network (Wifi or Ethernet) code for ESP32 and ESP8266",
+	"authors":
+	[
+		{
+		"name": "Benjamin Voelker",
+		"email": "voelkerb@me.com",
+		"url": "http://github.com/voelkerb/ESP.unifiedNetwork"
+		}
+	],
+	"repository":
+	{
+		"type": "git",
+		"url": "http://github.com/voelkerb/ESP.unifiedNetwork"
+	},
+	"frameworks": "arduino"
+}

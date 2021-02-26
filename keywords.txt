@@ -1,0 +1,40 @@
+#######################################
+# Syntax Coloring timeHandling Library
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+	
+Network	KEYWORD1
+Weekday		KEYWORD1	
+DST		    KEYWORD1
+Timestamp	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+connected	        KEYWORD2
+apMode	            KEYWORD2
+staConnected	    KEYWORD2
+allowNetworkChange	KEYWORD2
+ethernet	        KEYWORD2
+init		        KEYWORD2
+initPHY	            KEYWORD2
+connect	            KEYWORD2
+setupAP	            KEYWORD2
+IPAddress	        KEYWORD2
+wifiEvent	        KEYWORD2
+checkNetwork	    KEYWORD2
+scanNetwork	        KEYWORD2
+
+#######################################
+# Structures (KEYWORD3)
+#######################################
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+MAX_MAC_LEN			    LITERAL1
