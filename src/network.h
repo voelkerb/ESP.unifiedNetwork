@@ -28,7 +28,7 @@
 #else 
 #error Not supported for this architecture!
 #endif
-#include <multiLogger.h>
+#include "../../multiLogger/src/multiLogger.h"
 // Logging and configuration stuff
 // #include <multiLogger.h>
 
