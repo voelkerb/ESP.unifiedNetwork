@@ -43,6 +43,9 @@ void setup() {
 }
 
 void loop() {
+  #if defined(ESP8266)
+  Network::update();
+  #endif
   delay(1000);
   logger.log("ping!");
 }

@@ -26,18 +26,22 @@ namespace Network
   static void (*_onDisconnect)(void);
 
 #if defined(ESP8266)
-  static Ticker checker;
+  // static Ticker checker;
+
   WiFiEventHandler stationModeConnectedHandler;
   WiFiEventHandler stationModeDisconnectedHandler;
   WiFiEventHandler stationModeGotIPHandler;
   WiFiEventHandler softAPModeStationConnectedHandler;
   WiFiEventHandler softAPModeStationDisconnectedHandler;
+  long connectTimer = millis();
+  void (*CB)(void);
 
   void onSoftAPModeStationConnected(const WiFiEventSoftAPModeStationConnected& evt) {
     connected = true;
     apMode = true;
     if (logger != NULL) logger->log("AP_START");
     if (_onConnect) _onConnect();
+    CB = _onConnect;
   }
 
   void onSoftAPModeStationDisconnected(const WiFiEventSoftAPModeStationDisconnected& evt) {
@@ -49,9 +53,10 @@ namespace Network
   void onStationModeGotIP(const WiFiEventStationModeGotIP& evt) {
     connected = true;
     apMode = false;
-    checker.detach();
+    // checker.detach();
     if (logger != NULL) logger->log("STA_GOT_IP");
-    if (_onConnect) _onConnect();
+    // if (_onConnect) _onConnect();
+    CB = _onConnect;
   }
 
   void onStationModeConnected(const WiFiEventStationModeConnected& evt) {
@@ -64,9 +69,11 @@ namespace Network
     connected = false;
     apMode = false;
     // lets check for networks regularly
-    checker.attach(CHECK_PERIODE_MS/1000, checkNetwork);
+    connectTimer = millis();
+    // checker.attach(CHECK_PERIODE_MS/1000, checkNetwork);
     if (logger != NULL) logger->log("STA_DISCONNECTED");
-    if (_onDisconnect) _onDisconnect();
+    // if (_onDisconnect) _onDisconnect();
+    CB = _onDisconnect;
     setupAP();
   }
    
@@ -94,7 +101,24 @@ namespace Network
     // Disable wifi power saving
     wifi_set_sleep_type(NONE_SLEEP_T);
     checkNetwork();
-    checker.attach(CHECK_PERIODE_MS/1000, checkNetwork);
+    connectTimer = millis() + CHECK_PERIODE_MS;
+    // checker.attach(CHECK_PERIODE_MS/1000, checkNetwork);
+  }
+
+  void update() {
+    if (!connected) {
+      if ((long)(millis()-connectTimer) >= 0) {
+        Serial.println("test");
+        connectTimer += CHECK_PERIODE_MS;
+        // On long time no update, avoid multiupdate
+        if ((long)(millis() - connectTimer) >= 0) connectTimer = millis() + CHECK_PERIODE_MS;
+        checkNetwork();
+      }
+    }
+    if (CB != NULL) {
+      CB();
+      CB = NULL;
+    }
   }
 
   void scanNetwork() {

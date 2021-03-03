@@ -58,6 +58,10 @@ namespace Network {
     extern bool ethernet;
     extern bool allowNetworkChange;
 
+    #if defined(ESP8266)
+    void update();
+    #endif
+
     void init(NetworkConf * config);
     void init(NetworkConf * config, void (*onConnect)(void), void (*onDisconnect)(void), bool usingEthernet=false, MultiLogger * logger=NULL);
     
