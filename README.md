@@ -59,7 +59,7 @@ The current time will then be gathered from the rtc object. After each successfu
 #include "rtc.h"
 ...
 Rtc rtc(RTC_INT, SDA_PIN, SCL_PIN);
-TimeHandler myTime(config.timeServer, LOCATION_TIME_OFFSET, &rtc, &ntpSynced);
+TimeHandler myTime(config.myConf.timeServer, LOCATION_TIME_OFFSET, &rtc, &ntpSynced);
 ...
 
 ```

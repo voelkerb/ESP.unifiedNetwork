@@ -47,8 +47,8 @@
 struct NetworkConf {
     char name[MAX_DEVICE_NAME_LEN] = {'\0'};
     unsigned int numAPs = 0;
-    char SSIDs[MAX_NETWORK_LEN][MAX_NETWORK_LEN] = {{'\0'}};
-    char PWDs[MAX_PWD_LEN][MAX_NETWORK_LEN] = {{'\0'}};
+    char SSIDs[MAX_WIFI_APS][MAX_NETWORK_LEN] = {{'\0'}};
+    char PWDs[MAX_WIFI_APS][MAX_PWD_LEN] = {{'\0'}};
 };
 
 namespace Network {
