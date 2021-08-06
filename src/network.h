@@ -44,7 +44,9 @@
 #define MAX_NETWORK_LEN 20
 #define MAX_PWD_LEN 20
 #define MAX_DEVICE_NAME_LEN 20
-struct NetworkConf {
+
+// packed required to store in EEEPROM efficiently
+struct __attribute__((__packed__))NetworkConf {
     char name[MAX_DEVICE_NAME_LEN] = {'\0'};
     unsigned int numAPs = 0;
     char SSIDs[MAX_WIFI_APS][MAX_NETWORK_LEN] = {{'\0'}};
