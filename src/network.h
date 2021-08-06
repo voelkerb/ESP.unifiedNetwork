@@ -41,14 +41,14 @@
 #define CHECK_PERIODE_MS 60000
 
 #define MAX_WIFI_APS 5
-#define MAX_NETWORK_LEN 20
-#define MAX_PWD_LEN 20
-#define MAX_DEVICE_NAME_LEN 20
+#define MAX_NETWORK_LEN 30
+#define MAX_PWD_LEN 30
+#define MAX_DEVICE_NAME_LEN 3
 struct NetworkConf {
     char name[MAX_DEVICE_NAME_LEN] = {'\0'};
     unsigned int numAPs = 0;
-    char SSIDs[MAX_NETWORK_LEN][MAX_NETWORK_LEN] = {{'\0'}};
-    char PWDs[MAX_PWD_LEN][MAX_NETWORK_LEN] = {{'\0'}};
+    char SSIDs[MAX_WIFI_APS][MAX_NETWORK_LEN] = {{'\0'}};
+    char PWDs[MAX_WIFI_APS][MAX_NETWORK_LEN] = {{'\0'}};
 };
 
 namespace Network {
