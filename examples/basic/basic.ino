@@ -34,6 +34,9 @@ void setup() {
 }
 
 void loop() {
+  #if defined(ESP8266)
+  Network::update();
+  #endif
   delay(1000);
   Serial.println("ping!");
 }
