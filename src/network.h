@@ -38,7 +38,7 @@
 #include "WProgram.h"
 #endif
 // #define DEBUG_DEEP
-#define CHECK_PERIODE_MS 60000
+#define CHECK_PERIODE_MS 30000
 
 #define MAX_WIFI_APS 5
 #define MAX_NETWORK_LEN 20
