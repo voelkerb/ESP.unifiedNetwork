@@ -175,84 +175,86 @@ namespace Network
   }
 #endif
 
+#define DEBUG_DEEP
+
 #if defined(ESP32)
   void wifiEvent(WiFiEvent_t event) {
     #ifdef DEBUG_DEEP
     Serial.printf("Info:[WiFi-event] event: %d\n", event);
     switch (event) {
-      case SYSTEM_EVENT_WIFI_READY:
+      case ARDUINO_EVENT_WIFI_READY:
         Serial.println("Info:WiFi interface ready");
         break;
-      case SYSTEM_EVENT_SCAN_DONE:
+      case ARDUINO_EVENT_WIFI_SCAN_DONE:
         Serial.println("Info:Completed scan for access points");
         break;
-      case SYSTEM_EVENT_STA_START:
+      case ARDUINO_EVENT_WIFI_STA_START:
         Serial.println("Info:WiFi client started");
         break;
-      case SYSTEM_EVENT_STA_STOP:
+      case ARDUINO_EVENT_WIFI_STA_STOP:
         Serial.println("Info:WiFi clients stopped");
         break;
-      case SYSTEM_EVENT_STA_CONNECTED:
+      case ARDUINO_EVENT_WIFI_STA_CONNECTED:
         Serial.println("Info:Connected to access point");
         break;
-      case SYSTEM_EVENT_STA_DISCONNECTED:
+      case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
         Serial.println("Info:Disconnected from WiFi access point");
         break;
-      case SYSTEM_EVENT_STA_AUTHMODE_CHANGE:
+      case ARDUINO_EVENT_WIFI_STA_AUTHMODE_CHANGE:
         Serial.println("Info:Authentication mode of access point has changed");
         break;
-      case SYSTEM_EVENT_STA_GOT_IP:
+      case ARDUINO_EVENT_WIFI_STA_GOT_IP:
         Serial.println("Info:Obtained IP address");
         break;
-      case SYSTEM_EVENT_STA_LOST_IP:
+      case ARDUINO_EVENT_WIFI_STA_LOST_IP:
         Serial.println("Info:Lost IP address and IP address is reset to 0");
         break;
-      case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
-        Serial.println("Info:WiFi Protected Setup (WPS): succeeded in enrollee mode");
-        break;
-      case SYSTEM_EVENT_STA_WPS_ER_FAILED:
-        Serial.println("Info:WiFi Protected Setup (WPS): failed in enrollee mode");
-        break;
-      case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
-        Serial.println("Info:WiFi Protected Setup (WPS): timeout in enrollee mode");
-        break;
-      case SYSTEM_EVENT_STA_WPS_ER_PIN:
-        Serial.println("Info:WiFi Protected Setup (WPS): pin code in enrollee mode");
-        break;
-      case SYSTEM_EVENT_AP_START:
+      // case ARDUINO_EVENT_WIFI_STA_WPS_ER_SUCCESS:
+      //   Serial.println("Info:WiFi Protected Setup (WPS): succeeded in enrollee mode");
+      //   break;
+      // case ARDUINO_EVENT_WIFI_STA_WPS_ER_FAILED:
+      //   Serial.println("Info:WiFi Protected Setup (WPS): failed in enrollee mode");
+      //   break;
+      // case ARDUINO_EVENT_WIFI_STA_WPS_ER_TIMEOUT:
+      //   Serial.println("Info:WiFi Protected Setup (WPS): timeout in enrollee mode");
+      //   break;
+      // case ARDUINO_EVENT_WIFI_STA_WPS_ER_PIN:
+      //   Serial.println("Info:WiFi Protected Setup (WPS): pin code in enrollee mode");
+      //   break;
+      case ARDUINO_EVENT_WIFI_AP_START:
         Serial.println("Info:WiFi access point started");
         break;
-      case SYSTEM_EVENT_AP_STOP:
+      case ARDUINO_EVENT_WIFI_AP_STOP:
         Serial.println("Info:WiFi access point stopped");
         break;
-      case SYSTEM_EVENT_AP_STACONNECTED:
+      case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
         Serial.println("Info:Client connected");
         break;
-      case SYSTEM_EVENT_AP_STADISCONNECTED:
+      case ARDUINO_EVENT_WIFI_AP_STADISCONNECTED:
         Serial.println("Info:Client disconnected");
         break;
-      case SYSTEM_EVENT_AP_STAIPASSIGNED:
+      case ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED:
         Serial.println("Info:Assigned IP address to client");
         break;
-      case SYSTEM_EVENT_AP_PROBEREQRECVED:
+      case ARDUINO_EVENT_WIFI_AP_PROBEREQRECVED:
         Serial.println("Info:Received probe request");
         break;
-      case SYSTEM_EVENT_GOT_IP6:
+      case ARDUINO_EVENT_WIFI_STA_GOT_IP6:
         Serial.println("Info:IPv6 is preferred");
         break;
-      case SYSTEM_EVENT_ETH_START:
+      case ARDUINO_EVENT_ETH_START:
         Serial.println("Info:Ethernet started");
         break;
-      case SYSTEM_EVENT_ETH_STOP:
+      case ARDUINO_EVENT_ETH_STOP:
         Serial.println("Info:Ethernet stopped");
         break;
-      case SYSTEM_EVENT_ETH_CONNECTED:
+      case ARDUINO_EVENT_ETH_CONNECTED:
         Serial.println("Info:Ethernet connected");
         break;
-      case SYSTEM_EVENT_ETH_DISCONNECTED:
+      case ARDUINO_EVENT_ETH_DISCONNECTED:
         Serial.println("Info:Ethernet disconnected");
         break;
-      case SYSTEM_EVENT_ETH_GOT_IP:
+      case ARDUINO_EVENT_ETH_GOT_IP:
         Serial.println("Info:Ethernet obtained IP address");
         break;
       default:
@@ -263,19 +265,19 @@ namespace Network
     if (logger != NULL) {
       if (ethernet) {
         switch (event) {
-          case SYSTEM_EVENT_ETH_START: 
+          case ARDUINO_EVENT_ETH_START: 
             logger->log("ETH Started");
             break;
-          case SYSTEM_EVENT_ETH_CONNECTED:
+          case ARDUINO_EVENT_ETH_CONNECTED:
             logger->log("ETH Connected");
             break;
-          case SYSTEM_EVENT_ETH_GOT_IP:
+          case ARDUINO_EVENT_ETH_GOT_IP:
             logger->log("ETH MAC: %s, IP: %s, Speed: %iMbps", ETH.macAddress().c_str(), ETH.localIP().toString().c_str(), ETH.linkSpeed());
             break;
-          case SYSTEM_EVENT_ETH_DISCONNECTED:
+          case ARDUINO_EVENT_ETH_DISCONNECTED:
             logger->log("ETH Disconnected");
             break;
-          case SYSTEM_EVENT_ETH_STOP:
+          case ARDUINO_EVENT_ETH_STOP:
             logger->log("ETH Stopped");
             break;
           default:
@@ -283,23 +285,23 @@ namespace Network
         }
       } else {
         switch (event) {
-          case SYSTEM_EVENT_SCAN_DONE:
+          case ARDUINO_EVENT_WIFI_SCAN_DONE:
             break;
-          case SYSTEM_EVENT_STA_CONNECTED:
+          case ARDUINO_EVENT_WIFI_STA_CONNECTED:
             logger->log("STA_CONNECTED");
             break;
-          case SYSTEM_EVENT_STA_DISCONNECTED:
+          case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
             // lets check for networks regularly
             logger->log("STA_DISCONNECTED");
             break;
-          case SYSTEM_EVENT_STA_GOT_IP:
+          case ARDUINO_EVENT_WIFI_STA_GOT_IP:
             logger->log("STA_GOT_IP");
             break;
-          case SYSTEM_EVENT_AP_START:
+          case ARDUINO_EVENT_WIFI_AP_START:
             if (apMode) break;
             logger->log("AP_START");
             break;
-          case SYSTEM_EVENT_AP_STOP:
+          case ARDUINO_EVENT_WIFI_AP_STOP:
             if (not apMode) break;
             logger->log("AP_STOP");
             break;
@@ -310,22 +312,22 @@ namespace Network
     }
     if (ethernet) {
       switch (event) {
-        case SYSTEM_EVENT_ETH_START:
+        case ARDUINO_EVENT_ETH_START:
           //set eth hostname here
           ETH.setHostname(_config->name);
           break;
-        case SYSTEM_EVENT_ETH_CONNECTED:
+        case ARDUINO_EVENT_ETH_CONNECTED:
           preConnected = true;
           break;
-        case SYSTEM_EVENT_ETH_GOT_IP:
+        case ARDUINO_EVENT_ETH_GOT_IP:
           connected = true;
           if (_onConnect) _onConnect();
           break;
-        case SYSTEM_EVENT_ETH_DISCONNECTED:
+        case ARDUINO_EVENT_ETH_DISCONNECTED:
           connected = false;
           if (_onDisconnect) _onDisconnect();
           break;
-        case SYSTEM_EVENT_ETH_STOP:
+        case ARDUINO_EVENT_ETH_STOP:
           connected = false;
           break;
         default:
@@ -333,14 +335,14 @@ namespace Network
       }
     } else {
       switch (event) {
-        case SYSTEM_EVENT_SCAN_DONE:
+        case ARDUINO_EVENT_WIFI_SCAN_DONE:
           break;
-        case SYSTEM_EVENT_STA_CONNECTED:
+        case ARDUINO_EVENT_WIFI_STA_CONNECTED:
           apMode = false;
           connected = false;
           preConnected = true;
           break;
-        case SYSTEM_EVENT_STA_DISCONNECTED:
+        case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
           // Recheck for wifi networks
           if (connected and apMode == false) checkNetwork();
           connected = false;
@@ -349,7 +351,7 @@ namespace Network
           // lets check for networks regularly
           if (_onDisconnect) _onDisconnect();
           break;
-        case SYSTEM_EVENT_STA_GOT_IP:
+        case ARDUINO_EVENT_WIFI_STA_GOT_IP:
           WiFi.softAPdisconnect(false);
           WiFi.mode(WIFI_STA);
           connected = true;
@@ -357,13 +359,13 @@ namespace Network
           apMode = false;
           if (_onConnect) _onConnect();
           break;
-        case SYSTEM_EVENT_AP_START:
+        case ARDUINO_EVENT_WIFI_AP_START:
           if (apMode) break;
           connected = true;
           apMode = true;
           if (_onConnect) _onConnect();
           break;
-        case SYSTEM_EVENT_AP_STOP:
+        case ARDUINO_EVENT_WIFI_AP_STOP:
           if (not apMode) break;
           connected = false;
           apMode = false;
