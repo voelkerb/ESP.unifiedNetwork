@@ -386,10 +386,11 @@ namespace Network
     logger = the_logger;
     // We do not need bluetooth, so disable it
     esp_bt_controller_disable();
-    // Forget any previously set configuration
-    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+    // Forget any previously set configuration 
+    // Somehow with ESP Arduino Core 2.0++ this next two lines cause trouble
+    // WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     // Disconnect if we were connected
-    WiFi.disconnect();
+    // WiFi.disconnect();
     WiFi.mode(WIFI_STA);
     WiFi.onEvent(&wifiEvent);
     if (ethernet) {
@@ -437,12 +438,12 @@ namespace Network
         ESP.restart();
         // Reconfigure wifi
         // Delete results of previous scan
-        WiFi.scanDelete();
-        WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-        WiFi.disconnect();
-        WiFi.mode(WIFI_STA);
-        WiFi.onEvent(&wifiEvent);
-        esp_wifi_set_ps(WIFI_PS_NONE);
+        // WiFi.scanDelete();
+        // WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+        // WiFi.disconnect();
+        // WiFi.mode(WIFI_STA);
+        // WiFi.onEvent(&wifiEvent);
+        // esp_wifi_set_ps(WIFI_PS_NONE);
       } else if (n == -1) {
         WiFi.scanDelete();
         if (logger != NULL) logger->log(WARNING, "Scan already in progress");
@@ -492,7 +493,7 @@ namespace Network
         apInited = true;
       }
       // Delete results of previous scan
-      WiFi.scanDelete();
+      // WiFi.scanDelete();
       // If we are connected break, otherwise wait and continue with next scan
       if (staConnected) break;
       vTaskDelay(CHECK_PERIODE_MS);
