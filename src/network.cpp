@@ -493,7 +493,7 @@ namespace Network
         apInited = true;
       }
       // Delete results of previous scan
-      // WiFi.scanDelete();
+      WiFi.scanDelete();
       // If we are connected break, otherwise wait and continue with next scan
       if (staConnected) break;
       vTaskDelay(CHECK_PERIODE_MS);
